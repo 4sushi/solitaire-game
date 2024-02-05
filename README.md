@@ -1,6 +1,6 @@
 # solitaire-game
 
-Solitaire game (klondike), made with python & curses. Play in the terminal. For on Linux and Mac OS.
+Solitaire game (klondike), made with python & curses. Play in the terminal. For Linux and Mac OS.
 
 
 ![](doc/screenshot.png)
