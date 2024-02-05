@@ -1,0 +1,28 @@
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "solitaire-game"
+version = "0.0.6"
+authors = [
+    {name = "4sushi"},
+]
+description = "Solitaire game (klondike), made with python & curses. Play in the terminal. For on Linux and Mac OS."
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = ["game", "klondike", "solitaire", "curses"]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.scripts]
+solitaire-game = "solitaire_game.main:main"
+solitaire = "solitaire_game.main:main"
+
+[project.urls]
+Homepage = "https://github.com/4sushi/solitaire-game"
