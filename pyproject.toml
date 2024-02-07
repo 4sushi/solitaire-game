@@ -17,7 +17,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-dependencies = ['windows-curse>=2.3.2']
+dependencies = ['windows-curses >= 2.3.2 ; platform_system == "Windows"']
 
 [project.scripts]
 solitaire-game = "solitaire_game.main:main"
