@@ -2,6 +2,7 @@
 
 import curses
 import re
+from sys import platform
 from solitaire_game.game import GameSolitaire, Card
 from typing import List, Optional, Dict
 import sys
@@ -45,7 +46,10 @@ class GameUI:
         self.ID_COLOR_DEFAULT = 2
         curses.init_pair(self.ID_COLOR_DEFAULT, -1, -1)
         self.ID_COLOR_CURSOR = 3
-        curses.init_pair(self.ID_COLOR_CURSOR, curses.COLOR_MAGENTA, -1)
+        if sys.platform == 'win32':
+            curses.init_pair(self.ID_COLOR_CURSOR, curses.COLOR_RED, -1)
+        else:
+            curses.init_pair(self.ID_COLOR_CURSOR, curses.COLOR_MAGENTA, -1)
         self.ID_COLOR_CURSOR_SELECTED = 4
         curses.init_pair(self.ID_COLOR_CURSOR_SELECTED, curses.COLOR_GREEN, -1)
         self.controller()
