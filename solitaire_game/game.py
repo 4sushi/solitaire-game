@@ -32,7 +32,7 @@ class GameCards:
         'clubs': {'name': 'clubs', 'color': 'black', 'icon': '♣'},
     }
 
-    def __init__(self, min_value: int=1, max_value: int=13):
+    def __init__(self, min_value: int = 1, max_value: int = 13):
         self.cards: List[Card] = []
         for symbol in self.SYMBOLS.values():
             for value in range(min_value, max_value+1):
@@ -43,7 +43,7 @@ class GameCards:
     def mix_cards(self):
         random.shuffle(self.cards)
 
-    def withdraw_cards(self, quantity: int=1) -> List[Card]:
+    def withdraw_cards(self, quantity: int = 1) -> List[Card]:
         if quantity > len(self.cards):
             raise ValueError('Error withdraw cards - Not enough cards in the game')
         cards: List[Card] = self.cards[0:quantity]
@@ -64,7 +64,7 @@ class GameSolitaire:
 
         self.final_stacks: FinalStacks = FinalStacks()
 
-        self.areas = { # area id => area params
+        self.areas = {  # area id => area params
             '1': {'name': 'deck'},
             '2': {'name': 'final_stacks', 'i_stack': 0},
             '3': {'name': 'final_stacks', 'i_stack': 1},
@@ -82,9 +82,9 @@ class GameSolitaire:
     def action_switch_deck_cards(self):
         self.deck.switch_cards()
 
-    def handle_action_move_cards(self, src_area_id: str,  dest_area_id: str,  quantity:int=1):
-        src_params = self.areas[src_area_id]
-        dest_params = self.areas[dest_area_id]
+    def handle_action_move_cards(self, src_area_id: str,  dest_area_id: str,  quantity: int = 1):
+        src_params: Dict = self.areas[src_area_id]
+        dest_params: Dict = self.areas[dest_area_id]
 
         id_deck = [k for k, v in self.areas.items() if v['name'] == 'deck']
         id_final_stacks = [k for k, v in self.areas.items() if v['name'] == 'final_stacks']
@@ -164,10 +164,10 @@ class GameSolitaire:
 
 class Deck:
 
-    NB_VISIBLE_CARDS:int = 3
+    NB_VISIBLE_CARDS: int = 3
 
     def __init__(self, game_cards: GameCards):
-        self.cards:List[Card] = game_cards.withdraw_cards(quantity=24)
+        self.cards: List[Card] = game_cards.withdraw_cards(quantity=24)
         self.i_deck_min: int = 0
         self.i_deck_max: int = 0
 
@@ -223,7 +223,7 @@ class InitialStack:
         if self.count_visible_cards() == 0:
             return top_card.get_str_value() == 'K'
         else:
-            bottom_card:Card = self.get_pickable_cards(quantity=1)[0]
+            bottom_card: Card = self.get_pickable_cards(quantity=1)[0]
             return bottom_card.color != top_card.color and bottom_card.value == (top_card.value+1)
 
     def put_cards(self, cards: List[Card]):
@@ -235,7 +235,7 @@ class InitialStack:
             self.turn_hidden_card_face_up()
 
     def turn_hidden_card_face_up(self):
-        card:Card = self.hidden_cards.pop()
+        card: Card = self.hidden_cards.pop()
         self.visible_cards = [card]
 
 
@@ -274,7 +274,7 @@ class FinalStack:
         if self.count_cards() == 0:
             return card.get_str_value() == 'A'
         else:
-            top_card:Optional[Card] = self.get_pickable_card()
+            top_card: Optional[Card] = self.get_pickable_card()
             return top_card.value == (card.value-1) and top_card.symbol == card.symbol
 
     def put_card(self, card: Card):
