@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "solitaire-game"
+dynamic = ["version"]
 authors = [
     {name = "4sushi"},
 ]
