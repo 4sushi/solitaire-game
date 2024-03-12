@@ -1,9 +1,9 @@
 # Author: 4sushi
-
+from __future__ import annotations
 import curses
 import re
 from solitaire_game.game import GameSolitaire, Card
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Tuple
 import sys
 from datetime import datetime, timedelta
 from solitaire_game import BACK_CARD, TOP_PART_CARD, CARD_TEMPLATE, PART_CARD_TEMPLATE, TOP_PART_CARD_TEMPLATE
@@ -25,10 +25,10 @@ class GameUI:
         self.VERTICAL_MARGIN_BETWEEN_CARDS = 1
         self.MARGIN_TOP = 1
         self.MARGIN_LEFT = 1
-        self.ID_COLOR_RED = 1
-        self.ID_COLOR_DEFAULT = 2
-        self.ID_COLOR_CURSOR = 3
-        self.ID_COLOR_CURSOR_SELECTED = 4
+        self.COLOR_RED: None | int = None
+        self.COLOR_DEFAULT: None | int = None
+        self.COLOR_CURSOR: None | int = None
+        self.COLOR_CURSOR_SELECTED: None | int = None
         self.height: None | int = None
         self.width: None | int = None
         self.x_center: None | int = None
@@ -53,13 +53,17 @@ class GameUI:
         # Init colors
         curses.use_default_colors()
         curses.start_color()
-        curses.init_pair(self.ID_COLOR_RED, curses.COLOR_RED, -1)
-        curses.init_pair(self.ID_COLOR_DEFAULT, -1, -1)
+        curses.init_pair(1, curses.COLOR_RED, -1)
+        curses.init_pair(2, -1, -1)
         if sys.platform == 'win32':
-            curses.init_pair(self.ID_COLOR_CURSOR, curses.COLOR_RED, -1)
+            curses.init_pair(3, curses.COLOR_RED, -1)
         else:
-            curses.init_pair(self.ID_COLOR_CURSOR, curses.COLOR_MAGENTA, -1)
-        curses.init_pair(self.ID_COLOR_CURSOR_SELECTED, curses.COLOR_GREEN, -1)
+            curses.init_pair(3, curses.COLOR_MAGENTA, -1)
+        curses.init_pair(4, curses.COLOR_GREEN, -1)
+        self.COLOR_RED = curses.color_pair(1)
+        self.COLOR_DEFAULT = curses.color_pair(2)
+        self.COLOR_CURSOR = curses.color_pair(3)
+        self.COLOR_CURSOR_SELECTED = curses.color_pair(4)
         self.controller()
 
     def controller(self):
@@ -143,7 +147,8 @@ class GameUI:
     def popup_error(self):
         self.stdscr.clear()
         error_message: str = 'Screen is to small, enlarge the window to play.'
-        self.addstr(self.y_center - 1, self.x_center - int(len(error_message) / 2), error_message, self.ID_COLOR_RED)
+        self.stdscr.addstr(self.y_center - 1, self.x_center - int(len(error_message) / 2), error_message,
+                           self.COLOR_RED)
 
     def refresh_screen(self):
         self.stdscr.clear()
@@ -217,47 +222,49 @@ class GameUI:
             x += self.get_shape_card_str(CARD_TEMPLATE)['nb_cols'] + self.HORIZONTAL_MARGIN_BETWEEN_CARDS
 
     def draw_card(self, x: int, y: int, card_str: str, cursor_area=None, quantity=None):
-        id_color = None
+        stdscr_attr: int = 0
+        is_bold_card: bool = False
         if cursor_area and cursor_area == self.selected_cursor_area:
             if not quantity or quantity <= self.selected_quantity:
-                id_color = self.ID_COLOR_CURSOR_SELECTED
+                stdscr_attr = self.COLOR_CURSOR_SELECTED
+                is_bold_card = True
 
         if cursor_area == self.cursor_area:
             if not quantity or quantity <= self.quantity:
-                id_color = self.ID_COLOR_CURSOR
+                stdscr_attr = self.COLOR_CURSOR
+                is_bold_card = True
 
         lines = card_str.split('\n')
         for i, line in enumerate(lines):
-            self.addstr(x + i, y, line, id_color)
+            line = self.render_card_bold(is_bold_card, line)
+            self.stdscr.addstr(x + i, y, line, stdscr_attr)
             match = re.search(r'[0-9AJQK]+[♥♦]+|[♥♦]+\s?[0-9AJQK]+', line)
             if match:
-                self.addstr(x + i, y + match.start(), match.group(), self.ID_COLOR_RED)
+                self.stdscr.addstr(x + i, y + match.start(), match.group(), self.COLOR_RED)
             match = re.search(r'[0-9AJQK]+[♠♣]+|[♠♣]+\s?[0-9AJQK]+', line)
             if match:
-                self.addstr(x + i, y + match.start(), match.group(), self.ID_COLOR_DEFAULT)
+                self.stdscr.addstr(x + i, y + match.start(), match.group(), self.COLOR_DEFAULT)
+
+    def render_card_bold(self, bold_card: bool, line: str) -> str:
+        if not bold_card:
+            return line
+        replace_chars: List[Tuple[str, str]] = [('╭', '┏'), ('╮', '┓'), ('╯', '┛'), ('╰', '┗'), ('─', '━'), ('│', '┃')]
+        for c in replace_chars:
+            line = line.replace(c[0], c[1])
+        return line
 
     def eval_card_template(self, card_template: str, card: Optional[Card] = None) -> str:
+        left_value: str = '  '
+        right_value: str = '  '
+        icon: str = ' '
         if card:
-            card_str: str = card_template \
-                .replace('xx', card.get_str_value().ljust(2)) \
-                .replace('yy', card.get_str_value().rjust(2)) \
-                .replace('S', card.icon)
-        else:
-            card_str: str = card_template \
-                .replace('xx', '  ') \
-                .replace('yy', '  ') \
-                .replace('S', ' ')
-        return card_str
+            left_value = card.get_str_value().ljust(2)
+            right_value = card.get_str_value().rjust(2)
+            icon = card.icon
+        return card_template.replace('xx', left_value).replace('yy', right_value).replace('S', icon)
 
     def get_shape_card_str(self, card_str: str) -> Dict:
         lines: List[str] = card_str.split('\n')
         nb_lines: int = len(lines)
         nb_cols: int = max([len(line) for line in lines])
         return {'nb_lines': nb_lines, 'nb_cols': nb_cols}
-
-    def addstr(self, y: int, x: int, text: str, id_color_pair: Optional[int] = None):
-        if id_color_pair:
-            self.stdscr.attron(curses.color_pair(id_color_pair))
-        self.stdscr.addstr(y, x, text)
-        if id_color_pair:
-            self.stdscr.attroff(curses.color_pair(id_color_pair))
